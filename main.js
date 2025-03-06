@@ -3,7 +3,7 @@ const os = require('os')
 const fs = require('fs');
 
 let speed = 70
-let gameHistory = []
+let gameHistory = [0,1,2,3,4,5]
 let gameInState = 0
 let GameInterval
 
@@ -80,6 +80,7 @@ server.listen(3000, ()=> {
 
 const { createClient } = require('@supabase/supabase-js');
 const { Socket } = require('dgram');
+const { clearInterval } = require('timers');
 const supabaseUrl = 'https://viyfblkecqgwdnczljlq.supabase.co'
 const supabaseKey = 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6InZpeWZibGtlY3Fnd2RuY3psamxxIiwicm9sZSI6ImFub24iLCJpYXQiOjE3NDA5NDIwMjYsImV4cCI6MjA1NjUxODAyNn0.Flmtd3YQaj7yVLPVD3cVpg5HVRVhD-tmZL7Cd-_3Mho'
 const supabase = createClient(supabaseUrl, supabaseKey)
@@ -141,8 +142,8 @@ const updateSpeed = () => {
 
 startGame = () => {
         if (gameInState === 0) {
-            
-            gameInState = 1
+            let countdown = 10
+            gameInState = 10
             coefficient()
             updateSpeed()
             
@@ -152,26 +153,34 @@ startGame = () => {
                 if (i < gameResult ) {
                     i=i+0.01
                     io.emit('gameUpdate', {
-                        CurrentCoefficient : i.toFixed(2),
+                        CurrentCoefficient : `${i.toFixed(2)}x`,
                     })
+                    
                     console.log(i.toFixed(2))
                     }
             
             if (i >= gameResult ) {
                 clearInterval(GameInterval)
                 console.log(`Crashed at: ${gameResult}`)
-                io.emit('gameUpdate', {
-                    CurrentCoefficient : `Crashed at: ${i.toFixed(2)}`
-                })
+                let iCopy = i
                 i=1.0
                 gameInState = 0
                 gameHistory.unshift(gameResult)
-                if (gameHistory.length > 6) {
-                    gameHistory.splice(6)
-                }
+                const crashResult = setInterval(()=>{
+                    io.emit('gameUpdate', {
+                        CurrentCoefficient : `Crashed at: ${iCopy.toFixed(2)}x!`,
+                        Countdown : `Next game in ${countdown} seconds`
+                    })
+                },1)
+                const countdownInterval = setInterval(()=>{
+                    countdown=countdown-1
+                    if (countdown<=0) {
+                        clearInterval(countdownInterval)
+                    }
+                },1000)        
                 setTimeout(() => {
                     console.log('Начало новой игры...');
-                    
+                    clearInterval(crashResult)
                     startGame()
                 }, 10000);
             }
@@ -180,7 +189,18 @@ startGame = () => {
     }
 startGame()
         
+setInterval(() => {
+    io.emit('gameHistory', {
+        gameHistory0: gameHistory[0], 
+        gameHistory1: gameHistory[1],
+        gameHistory2: gameHistory[2],
+        gameHistory3: gameHistory[3], 
+        gameHistory4: gameHistory[4], 
+        gameHistory5: gameHistory[5], 
+    })
 
+}, 1);
+  
         
 
 

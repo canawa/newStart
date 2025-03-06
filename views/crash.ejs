@@ -11,29 +11,51 @@
 </head>
 
 <body>
-    <div id='coefficientDisplay'style="border: 2px solid red; font-size: 100px;"> Loading...
+    <div id='coefficientDisplay'style="border: 2px solid red; font-size: 100px;"> 
+        
+    </div>
+    <div id="deployCountdown">
+            
     </div>
     <div>
-        <% if (crashGameCoefficient>= 2) { %>
-            <h1> Коэфициент больше двух </h1>
-            <% } %>
-    </div>
-    <div>
-        <% gameHistory.forEach((element)=> { %>
-            <div><%= element %></div>
-         <% }) %>
+        <div class="gameHistory" id="betHistoryPlace0"></div>
+        <div class="gameHistory" id="betHistoryPlace1"></div>
+        <div class="gameHistory" id="betHistoryPlace2"></div>
+        <div class="gameHistory" id="betHistoryPlace3"></div>
+        <div class="gameHistory" id="betHistoryPlace4"></div>
+        <div class="gameHistory" id="betHistoryPlace5"></div>
+
     </div>
     <div> <button id="emergency">Взорвать </div>
 
     <script src="/socket.io/socket.io.js"></script>
     <script>
-        
+
+        let betHistoryPlace0 = document.getElementById('betHistoryPlace0')
+        let betHistoryPlace1 = document.getElementById('betHistoryPlace1')
+        let betHistoryPlace2 = document.getElementById('betHistoryPlace2')
+        let betHistoryPlace3 = document.getElementById('betHistoryPlace3')
+        let betHistoryPlace4 = document.getElementById('betHistoryPlace4')
+        let betHistoryPlace5 = document.getElementById('betHistoryPlace5')
+
+        const deployCountdown = document.getElementById('deployCountdown')
         const deployCoef = document.getElementById('coefficientDisplay')
         const socket = io()
         
         socket.on('gameUpdate', (data)=>{
-            
-            deployCoef.innerText = `${data.CurrentCoefficient}x`
+           
+            deployCoef.innerText = `${data.CurrentCoefficient}`
+            deployCountdown.innerText = `${data.Countdown}`
+
+        })
+
+        socket.on('gameHistory', (data)=> {
+            betHistoryPlace0.innerText = `${data.gameHistory0.toFixed(2)}x`
+            betHistoryPlace1.innerText = `${data.gameHistory1.toFixed(2)}x`
+            betHistoryPlace2.innerText = `${data.gameHistory2.toFixed(2)}x`
+            betHistoryPlace3.innerText = `${data.gameHistory3.toFixed(2)}x`
+            betHistoryPlace4.innerText = `${data.gameHistory4.toFixed(2)}x`
+            betHistoryPlace5.innerText = `${data.gameHistory5.toFixed(2)}x`
         })
 
     </script>
