@@ -1,0 +1,24 @@
+{
+  "name": "galartbet",
+  "version": "0.0.1",
+  "description": "",
+  "license": "ISC",
+  "author": "",
+  "type": "commonjs",
+  "main": "main.js",
+  "scripts": {
+    "start": "node main.js"
+  },
+  "dependencies": {
+    "@supabase/supabase-js": "^2.49.1",
+    "@tailwindcss/vite": "^4.0.10",
+    "autoprefixer": "^10.4.20",
+    "body-parser": "^1.20.3",
+    "ejs": "^3.1.10",
+    "express": "^4.21.2",
+    "postcss": "^8.5.3",
+    "socket.io": "^4.8.1",
+    "tailwindcss": "^4.0.10",
+    "ws": "^8.18.1"
+  }
+}

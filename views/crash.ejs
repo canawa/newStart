@@ -1,0 +1,42 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <link rel="stylesheet" href="/css/main.css">
+    
+    <title>Crash Page</title>
+   
+</head>
+
+<body>
+    <div id='coefficientDisplay'style="border: 2px solid red; font-size: 100px;"> Loading...
+    </div>
+    <div>
+        <% if (crashGameCoefficient>= 2) { %>
+            <h1> Коэфициент больше двух </h1>
+            <% } %>
+    </div>
+    <div>
+        <% gameHistory.forEach((element)=> { %>
+            <div><%= element %></div>
+         <% }) %>
+    </div>
+    <div> <button id="emergency">Взорвать </div>
+
+    <script src="/socket.io/socket.io.js"></script>
+    <script>
+        
+        const deployCoef = document.getElementById('coefficientDisplay')
+        const socket = io()
+        
+        socket.on('gameUpdate', (data)=>{
+            
+            deployCoef.innerText = `${data.CurrentCoefficient}x`
+        })
+
+    </script>
+</body>
+
+</html>

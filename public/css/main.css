@@ -1,0 +1,10 @@
+
+.gameHistory {
+    background-color: rgba(0, 0, 255, 0.733);
+    color: azure;
+    text-align: center;
+    border: 1px solid rgba(21, 154, 187, 0.705);
+    border-radius: 5px;
+    width: 60px;
+    box-shadow: 10px;
+}
