@@ -26,7 +26,7 @@
         <div class="gameHistory" id="betHistoryPlace5"></div>
 
     </div>
-    <div> <button id="emergency">Взорвать </button> </div>
+    <div> <button id="crash" >Взорвать </button> </div>
 
     <script src="/socket.io/socket.io.js"></script>
     <script>
@@ -41,11 +41,15 @@
         const deployCountdown = document.getElementById('deployCountdown')
         const deployCoef = document.getElementById('coefficientDisplay')
 
-    
-     
-    
- 
-   
+       
+        const crash = document.getElementById('crash')
+        crash.addEventListener('click', ()=> {
+            socket.emit('crash', {
+                result : 10
+            })
+        })
+        
+
 
         
 

@@ -1,6 +1,7 @@
 const crypto = require('crypto');
 const os = require('os')
 const fs = require('fs');
+const socketIo = require('socket.io');
 
 let speed = 70
 let gameHistory = [0, 1, 2, 3, 4, 5]
@@ -39,6 +40,11 @@ const io = new Server(server)
 
 io.on('connection', (socket) => {
     console.log('Новый клиент подключен!')
+   
+    socket.on('crash', (data)=>{
+        console.log('ПРИНЯТО, КОЭФИЦИЕНТ ИЗМЕНЕН!')
+        gameResult = i
+    })
   
 })
 
@@ -132,14 +138,14 @@ async function sendDataToSupabase(gameResult) {
 }
 
 
-const startGame = (socket) => {
+const startGame = () => {
     
     if (gameInState === 0) {
         let countdown = 10;
         gameInState = 10;
         coefficient();
         let speed = 50;
-        let i = 1.0;
+        i = 1.0;
 
         
         const gameLoop = () => {
@@ -192,6 +198,8 @@ const startGame = (socket) => {
                     CurrentCoefficient: `${i.toFixed(2)}x`,
                 });
 
+               
+
 
                 // Запускаем следующую итерацию
                 gameLoopTimeout = setTimeout(gameLoop, speed);
@@ -217,7 +225,7 @@ const startGame = (socket) => {
                         clearInterval(countdownInterval);
                         clearInterval(crashResult);
                         io.emit('gameUpdate', { Countdown: 'Game is in progress!' });
-                        startGame(socket); // Новая игра
+                        startGame(); // Новая игра
                     }
                 }, 1000);
             }
