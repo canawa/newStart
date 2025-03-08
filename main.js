@@ -3,33 +3,34 @@ const os = require('os')
 const fs = require('fs');
 
 let speed = 70
-let gameHistory = [0,1,2,3,4,5]
+let gameHistory = [0, 1, 2, 3, 4, 5]
 let gameInState = 0
 let GameInterval
+let gameLoopTimeout
 
-const express= require('express')
+const express = require('express')
 const http = require('http')
 const app = express()
 const { Server } = require('socket.io')
 
 app.set('view engine', 'ejs')
 app.use(express.static('public')) // тут статические файлы
-app.get('/', (req,res)=>{
+app.get('/', (req, res) => {
     res.render('index')
 })
 
-app.get('/crash',(req,res)=>{
-    res.render('crash' ,  {
+app.get('/crash', (req, res) => {
+    res.render('crash', {
         crashGameCoefficient: i,
-        gameHistory : gameHistory,
+        gameHistory: gameHistory,
     })
 })
 
-app.get('/mines',(req,res)=>{
+app.get('/mines', (req, res) => {
     res.render('mines')
 })
 
-app.get('/profile/',(req,res)=>{
+app.get('/profile/', (req, res) => {
     res.render('profile')
 })
 
@@ -40,7 +41,7 @@ io.on('connection', (socket) => {
     console.log('Новый клиент подключен!')
 })
 
-server.listen(3000, ()=> {
+server.listen(3000, () => {
     console.log('Server Running!')
 })
 
@@ -92,115 +93,133 @@ let gameResult = 0
 let res = os.platform()
 console.log(res)
 
+
 async function crashButton() {
-    gameResult = i + 0.05
+    gameResult = i + 0.1
 }
 
-    function coefficient() {
-        const randomValue = crypto.randomInt(0,2**32)
-        gameResult = 1 / (randomValue / 2**32 * 0.93);
-        gameResult = parseFloat(gameResult.toFixed(2))
-        if (crypto.randomInt(0,100) <= 4 ) {
-            gameResult=1.0
-        }
-       sendDataToSupabase(gameResult)
-        
-        return gameResult
+function coefficient() {
+    const randomValue = crypto.randomInt(0, 2 ** 32)
+    gameResult = 1 / (randomValue / 2 ** 32 * 0.93);
+    gameResult = parseFloat(gameResult.toFixed(2))
+    if (crypto.randomInt(0, 100) <= 4) {
+        gameResult = 1.0
+    }
+    sendDataToSupabase(gameResult)
+
+    return gameResult
 }
 
 async function sendDataToSupabase(gameResult) {
-    
+
     const { data, error } = await supabase
-        .from('CrashGameHistory')  
+        .from('CrashGameHistory')
         .insert([
-            { Coefficient: gameResult, 
-            Time: new Date(),
+            {
+                Coefficient: gameResult,
+                Time: new Date(),
             }
         ])
 
     if (error) {
         console.error('Ошибка при отправке данных в Supabase:', error)
     } else {
-        console.log('Данные успешно отправлены:', data)
+        console.log('Данные успешно отправлены:')
     }
 }
 
-const updateSpeed = () => {
-    if (i < 2.5) {
-        speed = 70;
-        
-    } else if (i >= 2.5 && i < 10) {
-        speed = 35;
-        clearInterval(GameInterval)
-    } else if (i >= 10 && i < 100) {
-        speed = 10;
-        clearInterval(GameInterval)
-    } else if (i > 100) {
-        speed = 1
-        clearInterval(GameInterval)
-    }}
 
-startGame = () => {
-        if (gameInState === 0) {
-            let countdown = 10
-            gameInState = 10
-            coefficient()
-            updateSpeed()
-            
-            speed = 50
-            GameInterval = setInterval(()=> {
-                
-                if (i < gameResult ) {
-                    i=i+0.01
-                    io.emit('gameUpdate', {
-                        CurrentCoefficient : `${i.toFixed(2)}x`,
-                    })
-                    
-                    console.log(i.toFixed(2))
-                    }
-            
-            if (i >= gameResult ) {
-                clearInterval(GameInterval)
-                console.log(`Crashed at: ${gameResult}`)
-                let iCopy = i
-                i=1.0
-                gameInState = 0
-                gameHistory.unshift(gameResult)
-                const crashResult = setInterval(()=>{
-                    io.emit('gameUpdate', {
-                        CurrentCoefficient : `Crashed at: ${iCopy.toFixed(2)}x!`,
-                        Countdown : `Next game in ${countdown} seconds`
-                    })
-                },1)
-                const countdownInterval = setInterval(()=>{
-                    countdown=countdown-1
-                    if (countdown<=0) {
-                        clearInterval(countdownInterval)
-                    }
-                },1000)        
-                setTimeout(() => {
-                    console.log('Начало новой игры...');
-                    clearInterval(crashResult)
-                    startGame()
-                }, 10000);
-            }
-        },speed)
-        }
-    }
-startGame()
+const startGame = () => {
+    if (gameInState === 0) {
+        let countdown = 10;
+        gameInState = 10;
+        coefficient();
         
+        let speed = 50;
+        let i = 1.0;
+
+        const gameLoop = () => {
+            console.log(gameResult.toFixed(2));
+            // Определяем скорость в зависимости от текущего коэффициента
+            if (i>1000) {
+                speed = 1
+                add = crypto.randomInt(5,100)
+            }
+
+            if (i > 50) {
+                speed = 1
+                let add = crypto.randomInt(1,4)
+            }
+            if (i > 25 ) {
+                speed = 1
+                add = crypto.randomInt(1,5)/10
+            }
+            else if (i > 10) {
+                speed = 1
+                add = crypto.randomInt(1,5)/100
+            }
+            else if (i > 2.5) {
+                speed = 25
+                add = 0.01}
+            else {
+                speed = 50
+                add = 0.01}
+
+            if (i < gameResult) {
+                i += add;
+                io.emit('gameUpdate', {
+                    CurrentCoefficient: `${i.toFixed(2)}x`,
+                });
+                
+                
+                // Запускаем следующую итерацию
+                gameLoopTimeout = setTimeout(gameLoop, speed);
+            } else {
+                // Логика завершения игры
+                const iCopy = i;
+                i = 1.0;
+                gameInState = 0;
+                gameHistory.unshift(gameResult);
+
+                // Таймер отображения результата
+                const crashResult = setInterval(() => {
+                    io.emit('gameUpdate', {
+                        CurrentCoefficient: `Crashed at: ${gameResult.toFixed(2)}x!`,
+                        Countdown: `Next game in ${countdown} seconds`,
+                    });
+                }, 1);
+
+                // Обратный отсчет
+                const countdownInterval = setInterval(() => {
+                    countdown -= 1;
+                    if (countdown <= 0) {
+                        clearInterval(countdownInterval);
+                        clearInterval(crashResult);
+                        io.emit('gameUpdate', { Countdown: 'Game is in progress!' });
+                        startGame(); // Новая игра
+                    }
+                }, 1000);
+            }
+        };
+
+        // Запуск игрового цикла
+        gameLoopTimeout = setTimeout(gameLoop, speed);
+    }
+};
+
+startGame();
 setInterval(() => {
     io.emit('gameHistory', {
-        gameHistory0: gameHistory[0], 
+        gameHistory0: gameHistory[0],
         gameHistory1: gameHistory[1],
         gameHistory2: gameHistory[2],
-        gameHistory3: gameHistory[3], 
-        gameHistory4: gameHistory[4], 
-        gameHistory5: gameHistory[5], 
+        gameHistory3: gameHistory[3],
+        gameHistory4: gameHistory[4],
+        gameHistory5: gameHistory[5],
     })
 
 }, 1);
-  
-        
+
+
 
 
