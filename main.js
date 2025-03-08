@@ -134,7 +134,6 @@ const startGame = () => {
         let countdown = 10;
         gameInState = 10;
         coefficient();
-        gameResult = 42100
         let speed = 50;
         let i = 1.0;
 
@@ -177,7 +176,7 @@ const startGame = () => {
                 add = 3.89
             } else if (i > 3000) {
                 speed = 1
-                add = 198.32
+                add = 198.33
             }
 
             if (i < gameResult) {
