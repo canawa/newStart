@@ -134,44 +134,59 @@ const startGame = () => {
         let countdown = 10;
         gameInState = 10;
         coefficient();
-        
+        gameResult = 42100
         let speed = 50;
         let i = 1.0;
 
         const gameLoop = () => {
             console.log(gameResult.toFixed(2));
-            // Определяем скорость в зависимости от текущего коэффициента
-            if (i>1000) {
+            if (i < 2) {
+                
+                speed = 50; 
+                add = 0.01;
+                
+            } else if (i < 5) {
+               
+                speed = 40; 
+                add = 0.01;
+                
+            } else if (i < 10) {
+             
+                speed = 30; 
+                add = 0.03;
+                
+            } else if (i < 20) {
+            
+                speed = 30; 
+                add = 0.06;
+                
+            } else if (i < 50) {
+               
+                speed = 20; 
+                add = 0.09;
+                
+            } else if ( i < 200 ) {
+                speed = 1; 
+                add = 0.19
+               
+            } else if ( i > 200 ) {
                 speed = 1
-                add = crypto.randomInt(5,100)
-            }
-
-            if (i > 50) {
+                add = 1.89
+            } else if (i > 1000) {
                 speed = 1
-                let add = crypto.randomInt(1,4)
-            }
-            if (i > 25 ) {
+                add = 3.89
+            } else if (i > 3000) {
                 speed = 1
-                add = crypto.randomInt(1,5)/10
+                add = 198.32
             }
-            else if (i > 10) {
-                speed = 1
-                add = crypto.randomInt(1,5)/100
-            }
-            else if (i > 2.5) {
-                speed = 25
-                add = 0.01}
-            else {
-                speed = 50
-                add = 0.01}
 
             if (i < gameResult) {
                 i += add;
                 io.emit('gameUpdate', {
                     CurrentCoefficient: `${i.toFixed(2)}x`,
                 });
-                
-                
+
+
                 // Запускаем следующую итерацию
                 gameLoopTimeout = setTimeout(gameLoop, speed);
             } else {
