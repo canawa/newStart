@@ -39,7 +39,9 @@ const io = new Server(server)
 
 io.on('connection', (socket) => {
     console.log('Новый клиент подключен!')
+  
 })
+
 
 server.listen(3000, () => {
     console.log('Server Running!')
@@ -82,6 +84,7 @@ server.listen(3000, () => {
 const { createClient } = require('@supabase/supabase-js');
 const { Socket } = require('dgram');
 const { clearInterval } = require('timers');
+const { emit } = require('process');
 const supabaseUrl = 'https://viyfblkecqgwdnczljlq.supabase.co'
 const supabaseKey = 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6InZpeWZibGtlY3Fnd2RuY3psamxxIiwicm9sZSI6ImFub24iLCJpYXQiOjE3NDA5NDIwMjYsImV4cCI6MjA1NjUxODAyNn0.Flmtd3YQaj7yVLPVD3cVpg5HVRVhD-tmZL7Cd-_3Mho'
 const supabase = createClient(supabaseUrl, supabaseKey)
@@ -129,7 +132,8 @@ async function sendDataToSupabase(gameResult) {
 }
 
 
-const startGame = () => {
+const startGame = (socket) => {
+    
     if (gameInState === 0) {
         let countdown = 10;
         gameInState = 10;
@@ -137,6 +141,7 @@ const startGame = () => {
         let speed = 50;
         let i = 1.0;
 
+        
         const gameLoop = () => {
             console.log(gameResult.toFixed(2));
             if (i < 2) {
@@ -178,6 +183,8 @@ const startGame = () => {
                 speed = 1
                 add = 198.33
             }
+            
+         
 
             if (i < gameResult) {
                 i += add;
@@ -210,7 +217,7 @@ const startGame = () => {
                         clearInterval(countdownInterval);
                         clearInterval(crashResult);
                         io.emit('gameUpdate', { Countdown: 'Game is in progress!' });
-                        startGame(); // Новая игра
+                        startGame(socket); // Новая игра
                     }
                 }, 1000);
             }
