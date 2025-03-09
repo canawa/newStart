@@ -114,7 +114,7 @@ function coefficient() {
     if (crypto.randomInt(0, 100) <= 4) {
         gameResult = 1.0
     }
-    sendDataToSupabase(gameResult)
+    
 
     return gameResult
 }
@@ -209,7 +209,7 @@ const startGame = () => {
                 i = 1.0;
                 gameInState = 0;
                 gameHistory.unshift(gameResult);
-
+                sendDataToSupabase(gameResult.toFixed(2))
                 // Таймер отображения результата
                 const crashResult = setInterval(() => {
                     io.emit('gameUpdate', {
