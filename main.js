@@ -22,8 +22,7 @@ app.get('/', (req, res) => {
 
 app.get('/crash', (req, res) => {
     res.render('crash', {
-        crashGameCoefficient: i,
-        gameHistory: gameHistory,
+       // тут объект, который передает данные в шаблонизатор
     })
 })
 
@@ -42,8 +41,9 @@ io.on('connection', (socket) => {
     console.log('Новый клиент подключен!')
    
     socket.on('crash', (data)=>{
+        if (gameInState === 10){
         console.log('ПРИНЯТО, КОЭФИЦИЕНТ ИЗМЕНЕН!')
-        gameResult = i
+        gameResult = i }
     })
   
 })
