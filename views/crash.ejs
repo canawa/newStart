@@ -27,6 +27,15 @@
 
     </div>
     <div> <button id="crash" >Взорвать </button> </div>
+    <div id="balance"> </div>
+    <div>
+        <div>
+            <form >
+            <input id="betAmount" type="number" name="bet" required>    
+            </form> 
+        </div>    
+        <button id = 'betButton'> Поставить </button>  
+    </div>
 
     <script src="/socket.io/socket.io.js"></script>
     <script>
@@ -49,8 +58,21 @@
             })
         })
         
+        const betButton = document.getElementById('betButton')
+        betButton.addEventListener('click', () => {
+            const betValue = parseFloat(document.getElementById('betAmount').value); // Получаем значение при клике
+            if (betValue > 0) {
+                socket.emit('bets', {
+                    betAmount: betValue
+                });
+            }
+        });
 
-
+        const balance = document.getElementById('balance')
+        socket.on('userBalance', (data)=>{
+            balance.innerHTML = `Баланс : ${data.userBalanceDOM}`
+        
+        }) 
         
 
         socket.on('gameUpdate', (data)=>{
@@ -63,7 +85,6 @@
             }
             
           
-
 
         })
 

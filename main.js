@@ -8,7 +8,7 @@ let gameHistory = [0, 1, 2, 3, 4, 5]
 let gameInState = 0
 let GameInterval
 let gameLoopTimeout
-
+let userBalance = 1000
 const express = require('express')
 const http = require('http')
 const app = express()
@@ -19,12 +19,19 @@ app.use(express.static('public')) // тут статические файлы
 app.get('/', (req, res) => {
     res.render('index')
 })
+app.use(express.urlencoded( {extended : true} )) 
 
 app.get('/crash', (req, res) => {
     res.render('crash', {
        // тут объект, который передает данные в шаблонизатор
     })
 })
+
+
+app.get('/auth', (req, res) => {
+    res.render('auth')
+})
+
 
 app.get('/mines', (req, res) => {
     res.render('mines')
@@ -38,6 +45,7 @@ const server = http.createServer(app)
 const io = new Server(server)
 
 io.on('connection', (socket) => {
+
     console.log('Новый клиент подключен!')
    
     socket.on('crash', (data)=>{
@@ -45,7 +53,21 @@ io.on('connection', (socket) => {
         console.log('ПРИНЯТО, КОЭФИЦИЕНТ ИЗМЕНЕН!')
         gameResult = i }
     })
-  
+    
+      
+        socket.on('bets', (data)=>{
+            userBalance = userBalance - data.betAmount
+            console.log('ПРИНЯТО')
+            socket.emit('userBalance', {
+                userBalanceDOM : userBalance,
+            })
+        
+        })
+   
+        socket.emit('userBalance', {
+            userBalanceDOM : userBalance,
+        })
+    
 })
 
 
@@ -91,6 +113,7 @@ const { createClient } = require('@supabase/supabase-js');
 const { Socket } = require('dgram');
 const { clearInterval } = require('timers');
 const { emit } = require('process');
+const bodyParser = require('body-parser');
 const supabaseUrl = 'https://viyfblkecqgwdnczljlq.supabase.co'
 const supabaseKey = 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6InZpeWZibGtlY3Fnd2RuY3psamxxIiwicm9sZSI6ImFub24iLCJpYXQiOjE3NDA5NDIwMjYsImV4cCI6MjA1NjUxODAyNn0.Flmtd3YQaj7yVLPVD3cVpg5HVRVhD-tmZL7Cd-_3Mho'
 const supabase = createClient(supabaseUrl, supabaseKey)
@@ -98,6 +121,7 @@ const supabase = createClient(supabaseUrl, supabaseKey)
 let i = 1
 
 let gameResult = 0
+
 
 let res = os.platform()
 console.log(res)
