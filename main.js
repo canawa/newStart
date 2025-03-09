@@ -24,6 +24,7 @@ app.use(express.urlencoded( {extended : true} ))
 app.get('/crash', (req, res) => {
     res.render('crash', {
        // тут объект, который передает данные в шаблонизатор
+       
     })
 })
 
@@ -47,28 +48,43 @@ const io = new Server(server)
 io.on('connection', (socket) => {
 
     console.log('Новый клиент подключен!')
-   
-    socket.on('crash', (data)=>{
-        if (gameInState === 10){
-        console.log('ПРИНЯТО, КОЭФИЦИЕНТ ИЗМЕНЕН!')
-        gameResult = i }
-    })
-    
-      
-        socket.on('bets', (data)=>{
-            userBalance = userBalance - data.betAmount
+
+    socket.emit('gameState', {
+        gameState: gameInState
+    });
+
+    socket.on('crash', (data) => {
+        if (gameInState === 10) {
+            console.log('ПРИНЯТО, КОЭФИЦИЕНТ ИЗМЕНЕН!');
+            gameResult = i;
+        }
+    });
+
+    socket.on('bets', (data) => {
+        if (gameInState === 0) { // Проверяем, идет ли игра
+            if (userBalance >= data.betAmount) {
+                userBalance -= data.betAmount;
+            } else {
+                socket.emit('notEnoughBalance', {
+                    notEnoughBalance : 'Not enough balance'
+                })
+            }
             console.log('ПРИНЯТО')
             socket.emit('userBalance', {
-                userBalanceDOM : userBalance,
-            })
-        
-        })
-   
-        socket.emit('userBalance', {
-            userBalanceDOM : userBalance,
-        })
-    
-})
+                userBalanceDOM: userBalance,
+            });
+        } else {
+            socket.emit('notEnoughBalance', {
+                notEnoughBalance: 'Игра уже идет, ставку сделать нельзя!'
+            });
+        }
+    });
+
+    socket.emit('userBalance', {
+        userBalanceDOM: userBalance,
+    });
+});
+
 
 
 server.listen(3000, () => {
@@ -171,7 +187,9 @@ const startGame = () => {
         let speed = 50;
         i = 1.0;
 
-        
+        io.emit('gameState', {
+            gameState : 10
+        })
         const gameLoop = () => {
             console.log(gameResult.toFixed(2));
             if (i < 2) {
@@ -245,6 +263,9 @@ const startGame = () => {
                 // Обратный отсчет
                 const countdownInterval = setInterval(() => {
                     countdown -= 1;
+                    io.emit('gameState', {
+                        gameState : 0
+                    })
                     if (countdown <= 0) {
                         clearInterval(countdownInterval);
                         clearInterval(crashResult);

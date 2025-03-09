@@ -31,14 +31,26 @@
     <div>
         <div>
             <form >
-            <input id="betAmount" type="number" name="bet" required>    
+                <input id="betAmount" type="text" name="bet" oninput="validateNumber(this)" placeholder="Enter bet amount">
             </form> 
         </div>    
+        <div id="notEnoughBalance" style="color: red;"></div>
         <button id = 'betButton'> Поставить </button>  
     </div>
 
     <script src="/socket.io/socket.io.js"></script>
     <script>
+        function validateNumber(input) {
+
+            input.value = input.value.replace(/[^0-9.]/g, '');
+  
+  
+            if (input.value.split('.').length > 2) {
+                input.value = input.value.substring(0, input.value.lastIndexOf('.'));
+  }
+}
+
+        
         const socket = io('http://localhost:3000');
         let betHistoryPlace0 = document.getElementById('betHistoryPlace0')
         let betHistoryPlace1 = document.getElementById('betHistoryPlace1')
@@ -58,22 +70,47 @@
             })
         })
         
+        socket.on('gameState', (data)=>{
+            gameState = parseInt(data.gameState)
+        })
         const betButton = document.getElementById('betButton')
+
+       
+
+
         betButton.addEventListener('click', () => {
             const betValue = parseFloat(document.getElementById('betAmount').value); // Получаем значение при клике
-            if (betValue > 0) {
+            if (betValue > 0 && gameState == 0) {
+                betButton.style.backgroundColor = 'red'; // Меняем цвет кнопки
+                betButton.innerText = 'Отмена'; // Меняем текст кнопки
                 socket.emit('bets', {
-                    betAmount: betValue
+                    betAmount: betValue.toFixed(2)
                 });
+            } else if (gameState !== 0) {
+                notEnoughBalance.innerHTML = `Игра уже идет, ставку сделать нельзя!` // ТУТ ЛОГИКА СТАВОК
+                setTimeout(()=>{
+                    notEnoughBalance.innerHTML = ''
+                    
+                }, 3000)
             }
         });
+
+        
 
         const balance = document.getElementById('balance')
         socket.on('userBalance', (data)=>{
             balance.innerHTML = `Баланс : ${data.userBalanceDOM}`
+
         
         }) 
         
+        socket.on('notEnoughBalance', (data)=>{
+            let notEnoughBalance = document.getElementById('notEnoughBalance')
+            notEnoughBalance.innerHTML = `${data.notEnoughBalance}`
+            setTimeout(()=>{
+                notEnoughBalance.innerHTML = ''
+            }, 3000)
+        })
 
         socket.on('gameUpdate', (data)=>{
             if (data.CurrentCoefficient != undefined) {
