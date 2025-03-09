@@ -40,6 +40,8 @@
 
     <script src="/socket.io/socket.io.js"></script>
     <script>
+        let betStatus = 'notPlaced'
+        let betValue = 0; // Переместим сюда, чтобы она была доступна для betCheck
         function validateNumber(input) {
 
             input.value = input.value.replace(/[^0-9.]/g, '');
@@ -75,26 +77,33 @@
         })
         const betButton = document.getElementById('betButton')
 
-       
 
-
-        betButton.addEventListener('click', () => {
-            const betValue = parseFloat(document.getElementById('betAmount').value); // Получаем значение при клике
-            if (betValue > 0 && gameState == 0) {
-                betButton.style.backgroundColor = 'red'; // Меняем цвет кнопки
-                betButton.innerText = 'Отмена'; // Меняем текст кнопки
+        const betCheck = setInterval(() => {
+            if (countdown === 1 && betStatus === 'placed') {
                 socket.emit('bets', {
                     betAmount: betValue.toFixed(2)
                 });
+                betStatus = 'notPlaced'; // Сбрасываем статус после отправки
+                clearInterval(betCheck); // Останавливаем проверку
+            }
+        }, 1); 
+    
+
+        betButton.addEventListener('click', () => {
+            const inputBetValue = parseFloat(document.getElementById('betAmount').value); // Получаем значение при клике
+            if (inputBetValue > 0 && gameState == 0) {
+                betValue = inputBetValue; // Сохраняем значение ставки
+                betButton.style.backgroundColor = 'red'; // Меняем цвет кнопки
+                betButton.innerText = 'Отмена'; // Меняем текст кнопки
+                betStatus = 'placed'; // Устанавливаем статус ставки
+                
             } else if (gameState !== 0) {
-                notEnoughBalance.innerHTML = `Игра уже идет, ставку сделать нельзя!` // ТУТ ЛОГИКА СТАВОК
-                setTimeout(()=>{
-                    notEnoughBalance.innerHTML = ''
-                    
-                }, 3000)
+                notEnoughBalance.innerHTML = `Игра уже идет, ставку сделать нельзя!`;
+                setTimeout(() => {
+                    notEnoughBalance.innerHTML = '';
+                }, 3000);
             }
         });
-
         
 
         const balance = document.getElementById('balance')
@@ -120,7 +129,7 @@
             if (data.Countdown != undefined) {
                 deployCountdown.innerText = `${data.Countdown}`
             }
-            
+            countdown = data.gameCountdown
           
 
         })

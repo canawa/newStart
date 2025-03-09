@@ -257,6 +257,7 @@ const startGame = () => {
                     io.emit('gameUpdate', {
                         CurrentCoefficient: `Crashed at: ${gameResult.toFixed(2)}x!`,
                         Countdown: `Next game in ${countdown} seconds`,
+                        gameCountdown: countdown,
                     });
                 }, 1);
 
