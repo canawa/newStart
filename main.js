@@ -188,7 +188,7 @@ const startGame = () => {
         i = 1.0;
 
         io.emit('gameState', {
-            gameState : 10
+            gameState : 1
         })
         const gameLoop = () => {
             console.log(gameResult.toFixed(2));

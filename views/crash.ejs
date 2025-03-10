@@ -40,7 +40,9 @@
 
     <script src="/socket.io/socket.io.js"></script>
     <script>
+        let cancelButton;
         let betStatus = 'notPlaced'
+        let countdown
         let betValue = 0; // Переместим сюда, чтобы она была доступна для betCheck
         function validateNumber(input) {
 
@@ -68,7 +70,7 @@
         const crash = document.getElementById('crash')
         crash.addEventListener('click', ()=> {
             socket.emit('crash', {
-                result : 10
+                result : 1
             })
         })
         
@@ -77,25 +79,46 @@
         })
         const betButton = document.getElementById('betButton')
 
+        const betCheckInterval = () => {
+                return setInterval(() => {
+                    if (countdown === 1 && betStatus === 'placed') {
+                    socket.emit('bets', {
+                        betAmount: betValue.toFixed(2)
+                    });
+                    betStatus = 'notPlaced'; // Сбрасываем статус после отправки
+                    clearInterval(betCheck); // Останавливаем проверку перед перезапуском
+                    betCheck = betCheckInterval(); // Перезапускаем интервал
+        }
+    }, 100);
+};
 
-        const betCheck = setInterval(() => {
-            if (countdown === 1 && betStatus === 'placed') {
-                socket.emit('bets', {
-                    betAmount: betValue.toFixed(2)
-                });
-                betStatus = 'notPlaced'; // Сбрасываем статус после отправки
-                clearInterval(betCheck); // Останавливаем проверку
-            }
-        }, 1); 
+let betCheck = betCheckInterval(); // Запускаем изначально
+        
+     
     
-
         betButton.addEventListener('click', () => {
-            const inputBetValue = parseFloat(document.getElementById('betAmount').value); // Получаем значение при клике
+            const inputBetValue = parseFloat(document.getElementById('betAmount').value);
             if (inputBetValue > 0 && gameState == 0) {
-                betValue = inputBetValue; // Сохраняем значение ставки
-                betButton.style.backgroundColor = 'red'; // Меняем цвет кнопки
-                betButton.innerText = 'Отмена'; // Меняем текст кнопки
-                betStatus = 'placed'; // Устанавливаем статус ставки
+                betValue = inputBetValue;
+                betButton.style.backgroundColor = 'red';
+                betButton.innerText = 'Отмена';
+                betStatus = 'placed';
+                cancelButton = document.createElement('button');
+                cancelButton.id = 'cancelButton';
+                cancelButton.innerText = 'Отмена';
+                cancelButton.style.backgroundColor = 'red';
+                betButton.parentNode.replaceChild(cancelButton, betButton);
+                
+                cancelButton.addEventListener('click', () => {
+                    betStatus = 'notPlaced';
+                    betValue = 0;
+                    cancelButton.parentNode.replaceChild(betButton, cancelButton);
+                    betButton.style.backgroundColor = '';
+                    betButton.innerText = 'Поставить';
+
+                    
+                });
+               
                 
             } else if (gameState !== 0) {
                 notEnoughBalance.innerHTML = `Игра уже идет, ставку сделать нельзя!`;
@@ -105,11 +128,15 @@
             }
         });
         
+      
+
+
+        
 
         const balance = document.getElementById('balance')
         socket.on('userBalance', (data)=>{
             balance.innerHTML = `Баланс : ${data.userBalanceDOM}`
-
+            
         
         }) 
         
