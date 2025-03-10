@@ -1,17 +1,94 @@
-~<!DOCTYPE html>
-<html lang="en">
+<!DOCTYPE html>
+<html lang="ru">
 <head>
-    <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Registration</title>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Registration and Login</title>
 </head>
 <body>
-    <form method="post" action="/register"> 
-        <label for="email"> Email </label>
-        <input aria-placeholder="e.g - maxwinner2000@gmail.com" type="email" id="email" name="email" required>
-        <br ><label for="password" id="password" name="password" > Пароль:</label>
-        <input type="password" required>  
-        <button type="submit"> Зарегестрироваться </button>
-    </form>
+  <!-- Блок для вывода сообщений об ошибках или успешном действии -->
+  <div id="message" style="color: red;"></div>
+  
+  <!-- Форма регистрации -->
+  <form id="registrationForm"> 
+    <div>Registration</div>
+    <label for="regEmail">Email:</label>
+    <input aria-placeholder="e.g - maxwinner2000@gmail.com" type="email" id="regEmail" name="email" required>
+    <br>
+    <label for="regPassword">Пароль:</label>
+    <input type="password" id="regPassword" name="password" required>  
+    <button type="submit">Зарегистрироваться</button>
+  </form>
+
+  <!-- Форма логина -->
+  <form id="loginForm"> 
+    <div>Login</div>
+    <label for="loginEmail">Email:</label>
+    <input aria-placeholder="e.g - maxwinner2000@gmail.com" type="email" id="loginEmail" name="email" required>
+    <br>
+    <label for="loginPassword">Пароль:</label>
+    <input type="password" id="loginPassword" name="password" required>  
+    <button type="submit">Войти</button>
+  </form>
+
+  <script type="module">
+
+    
+
+
+
+
+
+    import { createClient } from 'https://cdn.jsdelivr.net/npm/@supabase/supabase-js/+esm';
+    
+    const supabaseUrl = 'https://viyfblkecqgwdnczljlq.supabase.co'
+    const supabaseKey = 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6InZpeWZibGtlY3Fnd2RuY3psamxxIiwicm9sZSI6ImFub24iLCJpYXQiOjE3NDA5NDIwMjYsImV4cCI6MjA1NjUxODAyNn0.Flmtd3YQaj7yVLPVD3cVpg5HVRVhD-tmZL7Cd-_3Mho'
+    const supabase = createClient(supabaseUrl, supabaseKey);
+    
+
+    document.addEventListener('DOMContentLoaded', async () => {
+      const { data, error } = await supabase.auth.getSession();
+      if (error) {
+        console.error('Ошибка при получении сессии:', error);
+      } else if (data.session) {
+        window.location.href = '/';
+      } else {
+        console.log('Сессия не найдена, пользователь не авторизован.');
+      }
+    });
+    
+    // Обработчик для регистрации
+    document.getElementById('registrationForm').addEventListener('submit', async (e) => {
+      e.preventDefault();
+      const email = document.getElementById('regEmail').value;
+      const password = document.getElementById('regPassword').value;
+      
+      const { data, error } = await supabase.auth.signUp({ email, password });
+      
+      if (error) {
+        document.getElementById('message').innerText = 'Ошибка регистрации: ' + error.message;
+      } else {
+        document.getElementById('message').innerText = 'Регистрация прошла успешно!';
+        console.log('Пользователь зарегистрирован:', data.user);
+        window.location.href = '/';
+      }
+    });
+    
+    // Обработчик для логина
+    document.getElementById('loginForm').addEventListener('submit', async (e) => {
+      e.preventDefault();
+      const email = document.getElementById('loginEmail').value;
+      const password = document.getElementById('loginPassword').value;
+      
+      const { data, error } = await supabase.auth.signInWithPassword({ email, password });
+      window.location.href = '/';
+      if (error) {
+        document.getElementById('message').innerText = 'Ошибка логина: ' + error.message;
+      } else {
+        document.getElementById('message').innerText = 'Логин прошёл успешно!';
+        console.log('Пользователь вошёл:', data.user);
+      }
+    });
+  </script>
 </body>
 </html>

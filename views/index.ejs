@@ -1,16 +1,172 @@
 <!DOCTYPE html>
-<html lang="en">
+<html lang="ru">
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Document</title>
-    
+    <style>
+        /* Стили для модального окна */
+        .modal {
+            display: none; /* Скрыто по умолчанию */
+            position: fixed; /* Оверлей на весь экран */
+            z-index: 1; /* На переднем плане */
+            left: 0;
+            top: 0;
+            width: 100%; /* Полная ширина */
+            height: 100%; /* Полная высота */
+            overflow: auto; /* Включить прокрутку, если необходимо */
+            background-color: rgb(0,0,0); /* Черный фон с прозрачностью */
+            background-color: rgba(0,0,0,0.4); /* Черный фон с прозрачностью */
+        }
+
+        .modal-content {
+            background-color: #fefefe;
+            margin: 15% auto; /* 15% сверху и центрирование */
+            padding: 20px;
+            border: 1px solid #888;
+            width: 80%; /* Ширина модального окна */
+        }
+
+        .close {
+            color: #aaa;
+            float: right;
+            font-size: 28px;
+            font-weight: bold;
+        }
+
+        .close:hover,
+        .close:focus {
+            color: black;
+            text-decoration: none;
+            cursor: pointer;
+        }
+    </style>
 </head>
 <body style="background: url(https://images.wallpaperscraft.com/image/single/paper_texture_cells_55327_1920x1080.jpg); text-decoration: none;">
     <a href="/crash">Краш</a>
     <a href="/mines">Минки</a>
-    <a href="/profile">Профиль </a>
+    <a href="/profile" style="display: none;" id="profileButton">Профиль</a>
+    
+    <!-- Кнопки для открытия модального окна -->
+    <button id="openRegisterModal">Зарегистрироваться</button>
+    <button id="openLoginModal">Войти</button>
 
+    <!-- Модальное окно -->
+    <div id="myModal" class="modal">
+        <div class="modal-content">
+            <span class="close">&times;</span>
+            <div id="modalBody">
+                <!-- Здесь будет содержимое для регистрации и входа -->
+            </div>
+        </div>
+    </div>
+
+    <script type="module">
+        import { createClient } from 'https://cdn.jsdelivr.net/npm/@supabase/supabase-js/+esm';
+
+        const supabaseUrl = 'https://viyfblkecqgwdnczljlq.supabase.co'
+        const supabaseKey = 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6InZpeWZibGtlY3Fnd2RuY3psamxxIiwicm9sZSI6ImFub24iLCJpYXQiOjE3NDA5NDIwMjYsImV4cCI6MjA1NjUxODAyNn0.Flmtd3YQaj7yVLPVD3cVpg5HVRVhD-tmZL7Cd-_3Mho'
+        const supabase = createClient(supabaseUrl, supabaseKey);
+
+        // Получаем элементы
+        const modal = document.getElementById("myModal");
+        const span = document.getElementsByClassName("close")[0];
+        const modalBody = document.getElementById("modalBody");
+
+        // Функция для открытия модального окна
+        function openModal(content) {
+            modalBody.innerHTML = content; // Устанавливаем содержимое модального окна
+            modal.style.display = "block"; // Показываем модальное окно
+        }
+
+        // Проверка сессии при загрузке страницы
+        document.addEventListener('DOMContentLoaded', async () => {
+            const { data, error } = await supabase.auth.getSession();
+            if (error) {
+                console.error('Ошибка при получении сессии:', error);
+            } else if (data.session) {
+                // Если сессия активна, скрываем кнопки
+                document.getElementById("openRegisterModal").style.display = "none";
+                document.getElementById("openLoginModal").style.display = "none";
+                document.getElementById("profileButton").style.display = "block";
+            }
+        });
+
+        // Обработчики для кнопок
+        document.getElementById("openRegisterModal").onclick = function() {
+            openModal(`
+                <h2>Регистрация</h2>
+                <div id="message" style="color: red;"></div>
+                <form id="registrationForm">
+                    <label for="regEmail">Email:</label>
+                    <input type="email" id="regEmail" name="email" required>
+                    <br>
+                    <label for="regPassword">Пароль:</label>
+                    <input type="password" id="regPassword" name="password" required>
+                    <button type="submit">Зарегистрироваться</button>
+                </form>
+            `);
+
+            // Обработчик для регистрации
+            document.getElementById('registrationForm').addEventListener('submit', async (e) => {
+                e.preventDefault();
+                const email = document.getElementById('regEmail').value;
+                const password = document.getElementById('regPassword').value;
+
+                const { data, error } = await supabase.auth.signUp({ email, password });
+
+                if (error) {
+                    document.getElementById('message').innerText = 'Ошибка регистрации: ' + error.message;
+                } else {
+                    document.getElementById('message').innerText = 'Регистрация прошла успешно!';
+                    console.log('Пользователь зарегистрирован:', data.user);
+                    window.location.href = '/';
+                }
+            });
+        };
+
+        document.getElementById("openLoginModal").onclick = function() {
+            openModal(`
+                <h2>Вход</h2>
+                <div id="message" style="color: red;"></div>
+                <form id="loginForm">
+                    <label for="loginEmail">Email:</label>
+                    <input type="email" id="loginEmail" name="email" required>
+                    <br>
+                    <label for="loginPassword">Пароль:</label>
+                    <input type="password" id="loginPassword" name="password" required>
+                    <button type="submit">Войти</button>
+                </form>
+            `);
+
+            // Обработчик для логина
+            document.getElementById('loginForm').addEventListener('submit', async (e) => {
+                e.preventDefault();
+                const email = document.getElementById('loginEmail').value;
+                const password = document.getElementById('loginPassword').value;
+
+                const { data, error } = await supabase.auth.signInWithPassword({ email, password });
+
+                if (error) {
+                    document.getElementById('message').innerText = 'Ошибка логина: ' + error.message;
+                } else {
+                    document.getElementById('message').innerText = 'Логин прошёл успешно!';
+                    console.log('Пользователь вошёл:', data.user);
+                    window.location.href = '/';
+                }
+            });
+        };
+
+        // Закрытие модального окна
+        span.onclick = function() {
+            modal.style.display = "none"; // Скрываем модальное окно
+        };
+
+        window.onclick = function(event) {
+            if (event.target == modal) {
+                modal.style.display = "none"; // Скрываем модальное окно при клике вне его
+            }
+        };
+    </script>
 </body>
-
 </html>

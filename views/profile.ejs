@@ -1,11 +1,52 @@
 <!DOCTYPE html>
-<html lang="en">
+<html lang="ru">
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Профиль</title>
+    <script type="module">
+        import { createClient } from 'https://cdn.jsdelivr.net/npm/@supabase/supabase-js/+esm';
+
+        const supabaseUrl = 'https://viyfblkecqgwdnczljlq.supabase.co'
+        const supabaseKey = 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6InZpeWZibGtlY3Fnd2RuY3psamxxIiwicm9sZSI6ImFub24iLCJpYXQiOjE3NDA5NDIwMjYsImV4cCI6MjA1NjUxODAyNn0.Flmtd3YQaj7yVLPVD3cVpg5HVRVhD-tmZL7Cd-_3Mho'
+        const supabase = createClient(supabaseUrl, supabaseKey);
+
+        document.addEventListener('DOMContentLoaded', async () => {
+            const { data, error } = await supabase.auth.getSession(); // Получаем текущую сессию
+
+            if (error) {
+                console.error('Ошибка при получении сессии:', error);
+                return;
+            }
+
+            if (data.session) {
+                const user = data.session.user; // Получаем информацию о пользователе
+                document.getElementById('userId').innerText = `ID: ${user.id}`; // Отображаем уникальный идентификатор
+                document.getElementById('userEmail').innerText = `Email: ${user.email}`; // Отображаем почту
+            } else {
+                // Если сессия не найдена, перенаправляем на страницу входа
+                window.location.href = '/'; // Замените на ваш путь к странице входа
+            }
+        });
+
+        // Функция для выхода из аккаунта
+        async function logout() {
+            const { error } = await supabase.auth.signOut(); // Выход из аккаунта
+            if (error) {
+                console.error('Ошибка при выходе:', error);
+            } else {
+                window.location.href = '/'; // Перенаправляем на главную страницу после выхода
+            }
+        }
+        window.logout = logout;
+    </script>
 </head>
 <body>
-    <h1>Профиль</h1>   
+    <h1>Профиль</h1>
+    <div id="userInfo">
+        <p id="userId"></p> <!-- Здесь будет отображаться уникальный идентификатор -->
+        <p id="userEmail"></p> <!-- Здесь будет отображаться почта -->
+        <button onclick="logout()">Выйти</button> <!-- Кнопка для выхода из аккаунта -->
+    </div>
 </body>
 </html>
