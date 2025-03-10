@@ -188,7 +188,7 @@ const startGame = () => {
         i = 1.0;
 
         io.emit('gameState', {
-            gameState : 10
+            gameState : 1
         })
         const gameLoop = () => {
             console.log(gameResult.toFixed(2));
@@ -257,6 +257,7 @@ const startGame = () => {
                     io.emit('gameUpdate', {
                         CurrentCoefficient: `Crashed at: ${gameResult.toFixed(2)}x!`,
                         Countdown: `Next game in ${countdown} seconds`,
+                        gameCountdown: countdown,
                     });
                 }, 1);
 
