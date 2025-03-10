@@ -11,11 +11,9 @@
 </head>
 
 <body>
-    <div id='coefficientDisplay'style="border: 2px solid red; font-size: 100px;"> 
-        
+    <div id='coefficientDisplay' style="border: 2px solid red; font-size: 100px;"> 
     </div>
     <div id="deployCountdown">
-            
     </div>
     <div>
         <div class="gameHistory" id="betHistoryPlace0"></div>
@@ -24,116 +22,56 @@
         <div class="gameHistory" id="betHistoryPlace3"></div>
         <div class="gameHistory" id="betHistoryPlace4"></div>
         <div class="gameHistory" id="betHistoryPlace5"></div>
-
     </div>
-    <div> <button id="crash" >Взорвать </button> </div>
+    <div> <button id="crash">Взорвать </button> </div>
     <div id="balance"> </div>
-    <div>
-        <div>
-            <form >
-                <input id="betAmount" type="text" name="bet" oninput="validateNumber(this)" placeholder="Enter bet amount">
-            </form> 
-        </div>    
-        <div id="notEnoughBalance" style="color: red;"></div>
-        <button id = 'betButton'> Поставить </button>  
-    </div>
 
     <script src="/socket.io/socket.io.js"></script>
     <script>
-        function validateNumber(input) {
-
-            input.value = input.value.replace(/[^0-9.]/g, '');
-  
-  
-            if (input.value.split('.').length > 2) {
-                input.value = input.value.substring(0, input.value.lastIndexOf('.'));
-  }
-}
-
-        
         const socket = io('http://localhost:3000');
-        let betHistoryPlace0 = document.getElementById('betHistoryPlace0')
-        let betHistoryPlace1 = document.getElementById('betHistoryPlace1')
-        let betHistoryPlace2 = document.getElementById('betHistoryPlace2')
-        let betHistoryPlace3 = document.getElementById('betHistoryPlace3')
-        let betHistoryPlace4 = document.getElementById('betHistoryPlace4')
-        let betHistoryPlace5 = document.getElementById('betHistoryPlace5')
+        const betHistoryPlace0 = document.getElementById('betHistoryPlace0');
+        const betHistoryPlace1 = document.getElementById('betHistoryPlace1');
+        const betHistoryPlace2 = document.getElementById('betHistoryPlace2');
+        const betHistoryPlace3 = document.getElementById('betHistoryPlace3');
+        const betHistoryPlace4 = document.getElementById('betHistoryPlace4');
+        const betHistoryPlace5 = document.getElementById('betHistoryPlace5');
 
-        const deployCountdown = document.getElementById('deployCountdown')
-        const deployCoef = document.getElementById('coefficientDisplay')
+        const deployCountdown = document.getElementById('deployCountdown');
+        const deployCoef = document.getElementById('coefficientDisplay');
 
-       
-        const crash = document.getElementById('crash')
-        crash.addEventListener('click', ()=> {
+        const crash = document.getElementById('crash');
+        crash.addEventListener('click', () => {
             socket.emit('crash', {
-                result : 10
-            })
-        })
-        
-        socket.on('gameState', (data)=>{
-            gameState = parseInt(data.gameState)
-        })
-        const betButton = document.getElementById('betButton')
+                result: 1
+            });
+        });
 
-       
+        socket.on('gameState', (data) => {
+            gameState = parseInt(data.gameState);
+        });
 
+        const balance = document.getElementById('balance');
+        socket.on('userBalance', (data) => {
+            balance.innerHTML = `Баланс : ${data.userBalanceDOM}`;
+        });
 
-        betButton.addEventListener('click', () => {
-            const betValue = parseFloat(document.getElementById('betAmount').value); // Получаем значение при клике
-            if (betValue > 0 && gameState == 0) {
-                betButton.style.backgroundColor = 'red'; // Меняем цвет кнопки
-                betButton.innerText = 'Отмена'; // Меняем текст кнопки
-                socket.emit('bets', {
-                    betAmount: betValue.toFixed(2)
-                });
-            } else if (gameState !== 0) {
-                notEnoughBalance.innerHTML = `Игра уже идет, ставку сделать нельзя!` // ТУТ ЛОГИКА СТАВОК
-                setTimeout(()=>{
-                    notEnoughBalance.innerHTML = ''
-                    
-                }, 3000)
+        socket.on('gameUpdate', (data) => {
+            if (data.CurrentCoefficient != undefined) {
+                deployCoef.innerText = `${data.CurrentCoefficient}`;
+            }
+            if (data.Countdown != undefined) {
+                deployCountdown.innerText = `${data.Countdown}`;
             }
         });
 
-        
-
-        const balance = document.getElementById('balance')
-        socket.on('userBalance', (data)=>{
-            balance.innerHTML = `Баланс : ${data.userBalanceDOM}`
-
-        
-        }) 
-        
-        socket.on('notEnoughBalance', (data)=>{
-            let notEnoughBalance = document.getElementById('notEnoughBalance')
-            notEnoughBalance.innerHTML = `${data.notEnoughBalance}`
-            setTimeout(()=>{
-                notEnoughBalance.innerHTML = ''
-            }, 3000)
-        })
-
-        socket.on('gameUpdate', (data)=>{
-            if (data.CurrentCoefficient != undefined) {
-            deployCoef.innerText = `${data.CurrentCoefficient}`
-            crashPurpose = data.CurrentCoefficient
-            }
-            if (data.Countdown != undefined) {
-                deployCountdown.innerText = `${data.Countdown}`
-            }
-            
-          
-
-        })
-
-        socket.on('gameHistory', (data)=> {
-            betHistoryPlace0.innerText = `${data.gameHistory0.toFixed(2)}x`
-            betHistoryPlace1.innerText = `${data.gameHistory1.toFixed(2)}x`
-            betHistoryPlace2.innerText = `${data.gameHistory2.toFixed(2)}x`
-            betHistoryPlace3.innerText = `${data.gameHistory3.toFixed(2)}x`
-            betHistoryPlace4.innerText = `${data.gameHistory4.toFixed(2)}x`
-            betHistoryPlace5.innerText = `${data.gameHistory5.toFixed(2)}x`
-        })
-
+        socket.on('gameHistory', (data) => {
+            betHistoryPlace0.innerText = `${data.gameHistory0.toFixed(2)}x`;
+            betHistoryPlace1.innerText = `${data.gameHistory1.toFixed(2)}x`;
+            betHistoryPlace2.innerText = `${data.gameHistory2.toFixed(2)}x`;
+            betHistoryPlace3.innerText = `${data.gameHistory3.toFixed(2)}x`;
+            betHistoryPlace4.innerText = `${data.gameHistory4.toFixed(2)}x`;
+            betHistoryPlace5.innerText = `${data.gameHistory5.toFixed(2)}x`;
+        });
     </script>
 </body>
 

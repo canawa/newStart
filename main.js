@@ -54,7 +54,7 @@ io.on('connection', (socket) => {
     });
 
     socket.on('crash', (data) => {
-        if (gameInState === 10) {
+        if (gameInState === 1) {
             console.log('ПРИНЯТО, КОЭФИЦИЕНТ ИЗМЕНЕН!');
             gameResult = i;
         }
@@ -182,7 +182,7 @@ const startGame = () => {
     
     if (gameInState === 0) {
         let countdown = 10;
-        gameInState = 10;
+        gameInState = 1;
         coefficient();
         let speed = 50;
         i = 1.0;
