@@ -19,6 +19,9 @@ app.use(express.static('public')) // тут статические файлы
 app.get('/', (req, res) => {
     res.render('index')
 })
+app.get('/admin', (req, res) => {
+    res.render('admin')
+})
 app.use(express.urlencoded( {extended : true} )) 
 
 app.get('/crash', (req, res) => {
@@ -83,6 +86,7 @@ io.on('connection', (socket) => {
     socket.emit('userBalance', {
         userBalanceDOM: userBalance,
     });
+    
 });
 
 

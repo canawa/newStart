@@ -33,7 +33,10 @@
             font-size: 28px;
             font-weight: bold;
         }
-
+        .depositTitle {
+            text-align: center;
+            font-family: 'Calibri';
+        }
         .close:hover,
         .close:focus {
             color: black;
@@ -47,6 +50,7 @@
     <a href="/mines">Минки</a>
     <a href="/profile" style="display: none;" id="profileButton">Профиль</a>
     
+    <button id="deposit" style="display: none;">Пополнить</button>
     <!-- Кнопки для открытия модального окна -->
     <button id="openRegisterModal">Зарегистрироваться</button>
     <button id="openLoginModal">Войти</button>
@@ -72,7 +76,7 @@
         const modal = document.getElementById("myModal");
         const span = document.getElementsByClassName("close")[0];
         const modalBody = document.getElementById("modalBody");
-
+        const deposit = document.getElementById("deposit");
         // Функция для открытия модального окна
         function openModal(content) {
             modalBody.innerHTML = content; // Устанавливаем содержимое модального окна
@@ -89,12 +93,24 @@
                 document.getElementById("openRegisterModal").style.display = "none";
                 document.getElementById("openLoginModal").style.display = "none";
                 document.getElementById("profileButton").style.display = "block";
+                document.getElementById("deposit").style.display = "block";
             }
         });
 
         // Обработчики для кнопок
+        document.getElementById("deposit").onclick = function() {
+            openModal(`
+                <h2 id="depositTitle">Пополнить</h2>
+                <form id="depositForm">
+                    <label for="depositAmount">Сумма:</label>
+                    <input type="number" id="depositAmount" name="depositAmount" required>
+                    <button type="submit">Пополнить</button>
+                </form>
+            `);
+        };
         document.getElementById("openRegisterModal").onclick = function() {
             openModal(`
+
                 <h2>Регистрация</h2>
                 <div id="message" style="color: red;"></div>
                 <form id="registrationForm">
@@ -110,6 +126,7 @@
             // Обработчик для регистрации
             document.getElementById('registrationForm').addEventListener('submit', async (e) => {
                 e.preventDefault();
+                
                 const email = document.getElementById('regEmail').value;
                 const password = document.getElementById('regPassword').value;
 
@@ -118,9 +135,13 @@
                 if (error) {
                     document.getElementById('message').innerText = 'Ошибка регистрации: ' + error.message;
                 } else {
-                    document.getElementById('message').innerText = 'Регистрация прошла успешно!';
+                
+                    document.getElementById('message').innerText = 'Подтвердите почту!';
                     console.log('Пользователь зарегистрирован:', data.user);
-                    window.location.href = '/';
+                    setTimeout(() => {
+                        window.location.href = '/';
+                    }, 10000);
+                   
                 }
             });
         };

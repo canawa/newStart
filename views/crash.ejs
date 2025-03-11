@@ -22,11 +22,15 @@
         <div class="gameHistory" id="betHistoryPlace4"></div>
         <div class="gameHistory" id="betHistoryPlace5"></div>
     </div>
-    <div> <button id="crash">Взорвать </button> </div>
+    
     <div id="balance"> </div>
 
     <script src="/socket.io/socket.io.js"></script>
     <script>
+
+
+       
+
         const socket = io('http://localhost:3000');
         const betHistoryPlace0 = document.getElementById('betHistoryPlace0');
         const betHistoryPlace1 = document.getElementById('betHistoryPlace1');
@@ -38,12 +42,9 @@
         const deployCountdown = document.getElementById('deployCountdown');
         const deployCoef = document.getElementById('coefficientDisplay');
 
-        const crash = document.getElementById('crash');
-        crash.addEventListener('click', () => {
-            socket.emit('crash', {
-                result: 1
-            });
-        });
+        
+        
+       
 
         socket.on('gameState', (data) => {
             gameState = parseInt(data.gameState);
@@ -62,6 +63,7 @@
                 deployCountdown.innerText = `${data.Countdown}`;
             }
         });
+        
 
         socket.on('gameHistory', (data) => {
             betHistoryPlace0.innerText = `${data.gameHistory0.toFixed(2)}x`;

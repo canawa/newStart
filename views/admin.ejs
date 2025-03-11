@@ -1,0 +1,28 @@
+<div> <button id="crash" >Взорвать </button> </div>
+<script src="/socket.io/socket.io.js"></script>
+<script type="module">
+    import { createClient } from 'https://cdn.jsdelivr.net/npm/@supabase/supabase-js/+esm';
+    const socket = io('http://localhost:3000');
+    const supabaseUrl = 'https://viyfblkecqgwdnczljlq.supabase.co'
+    const supabaseKey = 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6InZpeWZibGtlY3Fnd2RuY3psamxxIiwicm9sZSI6ImFub24iLCJpYXQiOjE3NDA5NDIwMjYsImV4cCI6MjA1NjUxODAyNn0.Flmtd3YQaj7yVLPVD3cVpg5HVRVhD-tmZL7Cd-_3Mho'
+    const supabase = createClient(supabaseUrl, supabaseKey);
+
+    const crash = document.getElementById('crash');
+    crash.addEventListener('click', () => {
+        socket.emit('crash', {
+            result: 1
+        });
+    });
+    const {data, error} = await supabase.auth.getSession();
+    if (error) {
+        console.error('Ошибка при получении сессии:', error);
+        window.location.href = '/';
+        return;
+    }
+    if (data.session.user.id === 'e1772f4a-432e-4eba-9e50-991de30a0f78') {
+        
+    }
+    else {
+        window.location.href = '/';
+    }
+    </script>
