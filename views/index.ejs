@@ -54,6 +54,7 @@
     <!-- Кнопки для открытия модального окна -->
     <button id="openRegisterModal">Зарегистрироваться</button>
     <button id="openLoginModal">Войти</button>
+    <div id="balance" style="display: none;"> </div>
 
     <!-- Модальное окно -->
     <div id="myModal" class="modal">
@@ -77,25 +78,49 @@
         const span = document.getElementsByClassName("close")[0];
         const modalBody = document.getElementById("modalBody");
         const deposit = document.getElementById("deposit");
+        const balance = document.getElementById('balance')
         // Функция для открытия модального окна
         function openModal(content) {
             modalBody.innerHTML = content; // Устанавливаем содержимое модального окна
             modal.style.display = "block"; // Показываем модальное окно
         }
 
+
+
         // Проверка сессии при загрузке страницы
         document.addEventListener('DOMContentLoaded', async () => {
-            const { data, error } = await supabase.auth.getSession();
+            const {data, error} = await supabase.auth.getSession()
             if (error) {
-                console.error('Ошибка при получении сессии:', error);
-            } else if (data.session) {
+                console.log('Error', error)
+            }
+            else if (data.session) { // если data.session не null и не undefined
+                const user = data.session.user.id
+                const {data : userData, error: userError} = await supabase
+                .from('profiles') // из таблицы profiles
+                .select('balance') // !!!!! по столбцу баланс
+                .eq('user_id', user) // по столбцу user_id ищем такую строку, которая равна определенному значению (в моем случае user)\
+                .single()
+                if (userError) {
+                    console.log(userError)
+                }
+                else {
+                    let userBalance = userData.balance
+                    window.userBalance = userBalance
+                }
+               
+                
+                
                 // Если сессия активна, скрываем кнопки
                 document.getElementById("openRegisterModal").style.display = "none";
                 document.getElementById("openLoginModal").style.display = "none";
                 document.getElementById("profileButton").style.display = "block";
                 document.getElementById("deposit").style.display = "block";
+                document.getElementById('balance').style.display = 'block'
+                document.getElementById('balance').innerText = `Баланс: ${userBalance} `
             }
         });
+
+        
 
         // Обработчики для кнопок
         document.getElementById("deposit").onclick = function() {
@@ -140,7 +165,7 @@
                     console.log('Пользователь зарегистрирован:', data.user);
                     setTimeout(() => {
                         window.location.href = '/';
-                    }, 10000);
+                    }, 1000000);
                    
                 }
             });
@@ -173,7 +198,10 @@
                 } else {
                     document.getElementById('message').innerText = 'Логин прошёл успешно!';
                     console.log('Пользователь вошёл:', data.user);
-                    window.location.href = '/';
+                    setTimeout(() => {
+                        window.location.href = '/';
+                    }, 5000);
+                   
                 }
             });
         };
