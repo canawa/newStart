@@ -88,26 +88,31 @@
 
 
         // Проверка сессии при загрузке страницы
-        document.addEventListener('DOMContentLoaded', async () => {
-            const {data, error} = await supabase.auth.getSession()
-            if (error) {
-                console.log('Error', error)
-            }
-            else if (data.session) { // если data.session не null и не undefined
-                const user = data.session.user.id
-                const {data : userData, error: userError} = await supabase
-                .from('profiles') // из таблицы profiles
-                .select('balance') // !!!!! по столбцу баланс
-                .eq('user_id', user) // по столбцу user_id ищем такую строку, которая равна определенному значению (в моем случае user)\
-                .single()
-                if (userError) {
-                    console.log(userError)
-                }
-                else {
-                    let userBalance = userData.balance
-                    window.userBalance = userBalance
+            document.addEventListener('DOMContentLoaded', async () => {
+                const {data, error} = await supabase.auth.getSession()
+                console.log(data.session)
+                if (error) {
+                    console.warn(error)
                 }
                
+
+                else if (data.session) {
+                    const user = data.session.user.id
+                    const {data : userData, error: userError} = await supabase
+                    .from('profiles')
+                    .select('balance')
+                    .eq('user_id',user)
+                    .single()
+                    if (userError) {
+                        console.warn(userError)
+                            
+                    }
+                    
+                    else {
+                        let userBalance = userData.balance
+                        window.userBalance = userBalance
+                    }
+                
                 
                 
                 // Если сессия активна, скрываем кнопки
@@ -121,6 +126,8 @@
         });
 
         
+
+
 
         // Обработчики для кнопок
         document.getElementById("deposit").onclick = function() {

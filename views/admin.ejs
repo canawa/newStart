@@ -19,6 +19,9 @@
         window.location.href = '/';
         
     }
+    if (!data.session) {
+        window.location.href = '/'
+    }
     if (data.session.user.id != 'e1772f4a-432e-4eba-9e50-991de30a0f78') {
         window.location.href = '/';
     }

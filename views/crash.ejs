@@ -7,6 +7,48 @@
     <link rel="stylesheet" href="/css/main.css">
     
     <title>Crash Page</title>
+
+    <style>
+        /* Стили для модального окна */
+        .modal {
+            display: none; /* Скрыто по умолчанию */
+            position: fixed; /* Оверлей на весь экран */
+            z-index: 1; /* На переднем плане */
+            left: 0;
+            top: 0;
+            width: 100%; /* Полная ширина */
+            height: 100%; /* Полная высота */
+            overflow: auto; /* Включить прокрутку, если необходимо */
+            background-color: rgb(0,0,0); /* Черный фон с прозрачностью */
+            background-color: rgba(0,0,0,0.4); /* Черный фон с прозрачностью */
+        }
+
+        .modal-content {
+            background-color: #fefefe;
+            margin: 15% auto; /* 15% сверху и центрирование */
+            padding: 20px;
+            border: 1px solid #888;
+            width: 80%; /* Ширина модального окна */
+        }
+
+        .close {
+            color: #aaa;
+            float: right;
+            font-size: 28px;
+            font-weight: bold;
+        }
+        .depositTitle {
+            text-align: center;
+            font-family: 'Calibri';
+        }
+        .close:hover,
+        .close:focus {
+            color: black;
+            text-decoration: none;
+            cursor: pointer;
+        }
+    </style>
+
 </head>
 
 <body>
@@ -22,14 +64,26 @@
         <div class="gameHistory" id="betHistoryPlace4"></div>
         <div class="gameHistory" id="betHistoryPlace5"></div>
     </div>
-    
-    <div id="balance"> </div>
+    <div id="modal" class="modal">
+        <div class="modal-content">
+            <span class="close">&times;</span>
+            <div id="modalBody"></div>
+        </div>
+    </div>
+    <div id="balance" style="display: none;"> Баланс</div>
 
     <script src="/socket.io/socket.io.js"></script>
-    <script>
+    <script type = 'module'>
+        import { createClient } from 'https://cdn.jsdelivr.net/npm/@supabase/supabase-js/+esm';
 
+        const supabaseUrl = 'https://viyfblkecqgwdnczljlq.supabase.co'
+        const supabaseKey = 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6InZpeWZibGtlY3Fnd2RuY3psamxxIiwicm9sZSI6ImFub24iLCJpYXQiOjE3NDA5NDIwMjYsImV4cCI6MjA1NjUxODAyNn0.Flmtd3YQaj7yVLPVD3cVpg5HVRVhD-tmZL7Cd-_3Mho'
+        const supabase = createClient(supabaseUrl, supabaseKey);
 
-       
+        function openModal(content) {
+            modalBody.innerHTML = content; // Устанавливаем содержимое модального окна
+            modal.style.display = "block"; // Показываем модальное окно
+        }
 
         const socket = io('http://localhost:3000');
         const betHistoryPlace0 = document.getElementById('betHistoryPlace0');
@@ -38,22 +92,98 @@
         const betHistoryPlace3 = document.getElementById('betHistoryPlace3');
         const betHistoryPlace4 = document.getElementById('betHistoryPlace4');
         const betHistoryPlace5 = document.getElementById('betHistoryPlace5');
+        const modal = document.getElementById('modal');
+        const modalBody = document.getElementById('modalBody');
+        const span = document.getElementsByClassName('close')[0];
 
+    
+    
+    
+    
         const deployCountdown = document.getElementById('deployCountdown');
         const deployCoef = document.getElementById('coefficientDisplay');
 
         
-        
+        document.addEventListener('DOMContentLoaded', async () => {
+                const {data, error} = await supabase.auth.getSession()
+                console.log(data)
+                if (data.session == null) {
+                    openModal(`
+
+                <h2>Регистрация</h2>
+                <div id="message" style="color: red;"></div>
+                <form id="registrationForm">
+                    <label for="regEmail">Email:</label>
+                    <input type="email" id="regEmail" name="email" required>
+                    <br>
+                    <label for="regPassword">Пароль:</label>
+                    <input type="password" id="regPassword" name="password" required>
+                    <button type="submit">Зарегистрироваться</button>
+                </form>
+            `);
+
+            // Обработчик для регистрации
+            document.getElementById('registrationForm').addEventListener('submit', async (e) => {
+                e.preventDefault();
+                
+                const email = document.getElementById('regEmail').value;
+                const password = document.getElementById('regPassword').value;
+
+                const { data, error } = await supabase.auth.signUp({ email, password });
+
+                if (error) {
+                    document.getElementById('message').innerText = 'Ошибка регистрации: ' + error.message;
+                } else {
+                
+                    document.getElementById('message').innerText = 'Подтвердите почту!';
+                    console.log('Пользователь зарегистрирован:', data.user);
+                    setTimeout(() => {
+                        window.location.href = '/';
+                    }, 1000000);
+                   
+                }
+            });
+
+                }
+                if (error) {
+                    console.warn(error)
+                }
+               
+                else if (data.session) {
+                    const user = data.session.user.id
+                    const {data : userData, error: userError} = await supabase
+                    .from('profiles')
+                    .select('balance')
+                    .eq('user_id',user)
+                    .single()
+                    
+                    if (userError) {
+                        console.warn(userError)
+                        return // прерываем если ошибка
+                        
+                        }
+                        
+                    else {
+                        let userBalance = userData.balance
+                        window.userBalance = userBalance
+                    }
+                
+                    document.getElementById('balance').innerText = `Баланс: ${userBalance}`
+                    document.getElementById('balance').style.display = 'block'
+                    
+                }})
        
 
-        socket.on('gameState', (data) => {
-            gameState = parseInt(data.gameState);
-        });
+                span.onclick = function() {
+                    modal.style.display = "none";
+                }
+            
+                window.onclick = function(event) {
+                    if (event.target == modal) {
+                        modal.style.display = "none";
+                    }
+                }
 
-        const balance = document.getElementById('balance');
-        socket.on('userBalance', (data) => {
-            balance.innerHTML = `Баланс : ${data.userBalanceDOM}`;
-        });
 
         socket.on('gameUpdate', (data) => {
             if (data.CurrentCoefficient != undefined) {
@@ -76,4 +206,23 @@
     </script>
 </body>
 
+</html>
+
+<script>
+    const modal = document.getElementById('modal');
+    const modalBody = document.getElementById('modalBody');
+    const span = document.getElementsByClassName('close')[0];
+
+    // Закрытие при клике на X
+    span.onclick = function() {
+        modal.style.display = "none";
+    }
+
+    // Закрытие при клике вне окна
+    window.onclick = function(event) {
+        if (event.target == modal) {
+            modal.style.display = "none";
+        }
+    }
+</script>
 </html>

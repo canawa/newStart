@@ -6,11 +6,15 @@
     <title>Профиль</title>
     <script type="module">
         import { createClient } from 'https://cdn.jsdelivr.net/npm/@supabase/supabase-js/+esm';
-
+        
         const supabaseUrl = 'https://viyfblkecqgwdnczljlq.supabase.co'
         const supabaseKey = 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6InZpeWZibGtlY3Fnd2RuY3psamxxIiwicm9sZSI6ImFub24iLCJpYXQiOjE3NDA5NDIwMjYsImV4cCI6MjA1NjUxODAyNn0.Flmtd3YQaj7yVLPVD3cVpg5HVRVhD-tmZL7Cd-_3Mho'
         const supabase = createClient(supabaseUrl, supabaseKey);
 
+        function openModal(content) {
+            modalBody.innerHTML = content; // Устанавливаем содержимое модального окна
+            modal.style.display = "block"; // Показываем модальное окно
+        }
         document.addEventListener('DOMContentLoaded', async () => {
             const { data, error } = await supabase.auth.getSession(); // Получаем текущую сессию
 

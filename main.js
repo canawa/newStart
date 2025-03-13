@@ -50,7 +50,7 @@ const io = new Server(server)
 
 io.on('connection', (socket) => {
 
-    console.log('Новый клиент подключен!')
+    
 
     socket.emit('gameState', {
         gameState: gameInState
@@ -190,12 +190,12 @@ const startGame = () => {
         coefficient();
         let speed = 50;
         i = 1.0;
-
+        console.log(gameResult.toFixed(2));
         io.emit('gameState', {
             gameState : 1
         })
         const gameLoop = () => {
-            console.log(gameResult.toFixed(2));
+            
             if (i < 2) {
                 
                 speed = 50; 
